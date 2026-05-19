@@ -4,44 +4,158 @@ import Sidebar from "../components/Sidebar";
 import {
   Bell,
   Search,
-  Activity,
-  ShieldCheck,
-  Database,
   Cpu,
-  ArrowUpRight,
-  TrendingUp,
-  AlertTriangle,
+  ShieldCheck,
+  UserCheck,
   RefreshCw,
+  TrendingUp,
+  ArrowUpRight,
   Home as HomeIcon,
-  CheckCircle2,
-  Lock,
-  UserCheck
+  Database,
+  AlertTriangle,
+  Lock
 } from "lucide-react";
+
+// ==========================================
+// TYPE DEFINITIONS & ARCHITECTURAL SCHEMAS
+// ==========================================
+interface AssetMetric {
+  id: string;
+  label: string;
+  value: number;
+  badge?: string;
+  subtext: string;
+  icon?: React.ReactNode;
+}
+
+interface SubsystemPipeline {
+  id: string;
+  title: string;
+  description: string;
+  route: string;
+  securityProfile: string;
+  statusText: string;
+  statusVariant: "success" | "stable" | "native";
+  icon: React.ReactNode;
+  bgIconClass: string;
+  textIconClass: string;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  
-  // Real-time system monitoring state simulation
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [systemStatus, setSystemStatus] = useState<string>("DEGRADED OPERATION CORES");
 
-  const triggerManualSync = () => {
+  // ==========================================
+  // UTILITY: INDIAN FINANCIAL CURRENCY FORMATTER
+  // ==========================================
+  const formatIndianCurrency = (amount: number): string => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  // ==========================================
+  // DATA CORE: CORE ASSET METRICS
+  // ==========================================
+  const assetMetrics: AssetMetric[] = [
+    {
+      id: "total_portfolio",
+      label: "Total Portfolio Asset Base",
+      value: 28450000,
+      badge: "+12.4%",
+      subtext: "Cross-System Aggregate"
+    },
+    {
+      id: "equity_holdings",
+      label: "Equity Holdings Portfolio",
+      value: 12400000,
+      subtext: "External API Verified",
+      icon: <Lock className="w-3 h-3 text-indigo-400/60" />
+    },
+    {
+      id: "mutual_funds",
+      label: "Mutual Fund Assets (SIP)",
+      value: 8250000,
+      subtext: "Real-time NAV Tracked"
+    },
+    {
+      id: "real_estate",
+      label: "Internal Real Estate Ledger",
+      value: 7800000,
+      subtext: "Isolated SQL DB Records",
+      icon: <Database className="w-3 h-3 text-cyan-400/60" />
+    }
+  ];
+
+  // ==========================================
+  // DATA CORE: DOWNSTREAM PIPELINE CONFIG
+  // ==========================================
+  const subsystems: SubsystemPipeline[] = [
+    {
+      id: "equity_pipeline",
+      title: "Equity Pipeline Module",
+      description: "Aggregates and normalizes cross-broker stock holdings, user asset transactions, and portfolio activity feeds.",
+      route: "/analytics",
+      securityProfile: "Security: JWT Access Context",
+      statusText: "Synced",
+      statusVariant: "success",
+      icon: <TrendingUp className="w-4 h-4" />,
+      bgIconClass: "bg-indigo-500/5 border-indigo-500/20",
+      textIconClass: "text-indigo-400 group-hover:text-indigo-400"
+    },
+    {
+      id: "mutual_fund_engine",
+      title: "Mutual Fund & SIP Engine",
+      description: "Monitors active systematic investment plans, parses real-time NAV movements, and records investment distributions.",
+      route: "/mutualfunds",
+      securityProfile: "Auth: HMAC Signed Signature",
+      statusText: "Stable",
+      statusVariant: "stable",
+      icon: <RefreshCw className="w-4 h-4" />,
+      bgIconClass: "bg-emerald-500/5 border-emerald-500/20",
+      textIconClass: "text-emerald-400 group-hover:text-emerald-400"
+    },
+    {
+      id: "real_estate_core",
+      title: "Real Estate Ledger Core",
+      description: "Manages internal localized asset properties, title ownership structures, valuation models, and monthly rental income streams.",
+      route: "/sipplans",
+      securityProfile: "Database: PostgreSQL Schema",
+      statusText: "Native",
+      statusVariant: "native",
+      icon: <HomeIcon className="w-4 h-4" />,
+      bgIconClass: "bg-cyan-500/5 border-cyan-500/20",
+      textIconClass: "text-cyan-400 group-hover:text-cyan-400"
+    }
+  ];
+
+  // ==========================================
+  // HANDLER: CORE PIPELINE RE-RECONCILIATION
+  // ==========================================
+  const handlePipelineSync = (): void => {
     setIsSyncing(true);
-    setTimeout(() => setIsSyncing(false), 1200);
+    setTimeout(() => {
+      setIsSyncing(false);
+      setSystemStatus("ALL SYSTEMS OPERATIONAL");
+    }, 1500);
   };
 
   return (
     <div className="flex bg-[#030712] min-h-screen text-slate-100 font-sans antialiased selection:bg-cyan-500/20 selection:text-cyan-400">
       
-      {/* INTEGRATED SIDEBAR */}
+      {/* INTEGRATED SIDEBAR NAVIGATION */}
       <Sidebar />
 
-      {/* WORKSPACE AREA */}
-      <div className="flex-1 p-8 lg:p-10 space-y-8 overflow-y-auto max-w-[1600px] mx-auto w-full">
+      {/* CORE WORKSPACE AREA */}
+      <main className="flex-1 p-8 lg:p-10 space-y-8 overflow-y-auto max-w-[1600px] mx-auto w-full">
         
         {/* ================= TOP APPLICATION BAR ================= */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-900 pb-6">
+        <section className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-900 pb-6">
           
-          {/* Global Multi-Asset Search Context */}
+          {/* Global Multi-Asset Search Input */}
           <div className="bg-slate-950/60 border border-slate-900 focus-within:border-slate-800 transition-colors flex items-center px-4 py-2.5 rounded-xl w-full sm:w-[380px]">
             <Search className="text-slate-500 w-4 h-4 shrink-0" />
             <input
@@ -51,11 +165,11 @@ const Dashboard = () => {
             />
           </div>
 
-          {/* Infrastructure Metrics & Admin Profile */}
+          {/* Infrastructure Health Telemetry Metrics */}
           <div className="flex items-center gap-4 self-end sm:self-auto">
             
-            {/* Live Cache & Rate Limiting Health Tags */}
-            <div className="hidden lg:flex items-center gap-3 font-mono text-[10px] bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-900">
+            {/* Caching and Gatekeeper Threshold Status Labels */}
+            <div className="hidden lg:flex items-center gap-3 font-mono text-[10px] bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-900 select-none">
               <div className="flex items-center gap-1 text-slate-500">
                 <Cpu className="w-3 h-3 text-cyan-500/70" />
                 <span>Redis: Active</span>
@@ -67,14 +181,14 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Notification Hub */}
-            <button className="relative bg-slate-950 p-2.5 rounded-xl border border-slate-900 text-slate-400 hover:text-white transition-colors">
+            {/* Notification Interface Node */}
+            <button className="relative bg-slate-950 p-2.5 rounded-xl border border-slate-900 text-slate-400 hover:text-white transition-colors focus:outline-none focus:border-slate-700">
               <Bell className="w-4 h-4" />
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
             </button>
 
-            {/* Identity Role Checkbox Avatar */}
-            <div className="flex items-center gap-3 bg-slate-950 pl-3 pr-4 py-1.5 rounded-xl border border-slate-900">
+            {/* Operational Role Profile Context */}
+            <div className="flex items-center gap-3 bg-slate-950 pl-3 pr-4 py-1.5 rounded-xl border border-slate-900 select-none">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-emerald-500 flex items-center justify-center text-slate-950 font-bold text-xs">
                 RM
               </div>
@@ -85,12 +199,12 @@ const Dashboard = () => {
             </div>
 
           </div>
-        </div>
+        </section>
 
-        {/* ================= SECTION TITLE & SYSTEM TELEMETRY ================= */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
+        {/* ================= WORKSPACE HEADLINE HEADER ================= */}
+        <section className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 bg-slate-950 border border-slate-900 px-3 py-1 rounded-md text-slate-500 text-[10px] uppercase tracking-wider font-mono mb-3">
+            <div className="inline-flex items-center gap-2 bg-slate-950 border border-slate-900 px-3 py-1 rounded-md text-slate-500 text-[10px] uppercase tracking-wider font-mono mb-3 select-none">
               <UserCheck className="w-3 h-3 text-cyan-400" />
               <span>Cross-Service Investor Mapping: Secure</span>
             </div>
@@ -102,169 +216,105 @@ const Dashboard = () => {
             </p>
           </div>
 
-          {/* Resilience Trigger */}
+          {/* Core Pipeline Re-conciliation Action Trigger */}
           <button 
-            onClick={triggerManualSync}
+            onClick={handlePipelineSync}
             disabled={isSyncing}
-            className="flex items-center gap-2 bg-slate-950 hover:bg-slate-900 text-slate-300 px-4 py-2 rounded-xl text-xs font-medium border border-slate-900 transition-all font-mono disabled:opacity-50"
+            className="flex items-center gap-2 bg-slate-950 hover:bg-slate-900 text-slate-300 px-4 py-2 rounded-xl text-xs font-medium border border-slate-900 transition-all font-mono disabled:opacity-50 focus:outline-none"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{isSyncing ? "Reconciling..." : "Force Pipeline Re-Sync"}</span>
           </button>
-        </div>
+        </section>
 
-        {/* ================= PRIMARY CONSOLIDATED LEDGER METRICS ================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          
-          {/* Total Portfolio Value Card */}
-          <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 flex flex-col justify-between space-y-4">
-            <div className="flex items-center justify-between text-xs text-slate-500">
-              <span className="font-medium">Total Portfolio Asset Base</span>
-              <span className="text-emerald-400 bg-emerald-500/5 px-2 py-0.5 rounded font-mono text-[10px] font-bold">+12.4%</span>
-            </div>
-            <div>
-              <h2 className="text-3xl font-semibold text-white tracking-tight">₹2,84,50,000</h2>
-              <p className="text-[10px] text-slate-500 font-mono mt-1">Cross-System Aggregate</p>
-            </div>
-          </div>
-
-          {/* Equity Holdings Segment Card */}
-          <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 flex flex-col justify-between space-y-4">
-            <div className="flex items-center justify-between text-xs text-slate-500">
-              <span className="font-medium">Equity Holdings Portfolio</span>
-              <Lock className="w-3 h-3 text-indigo-400/60" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-semibold text-indigo-400 tracking-tight">₹1,24,00,000</h2>
-              <p className="text-[10px] text-slate-500 font-mono mt-1">External API Verified</p>
-            </div>
-          </div>
-
-          {/* Mutual Funds Segment Card */}
-          <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 flex flex-col justify-between space-y-4">
-            <div className="flex items-center justify-between text-xs text-slate-500">
-              <span className="font-medium">Mutual Fund Assets (SIP)</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-semibold text-emerald-400 tracking-tight">₹82,50,000</h2>
-              <p className="text-[10px] text-slate-500 font-mono mt-1">Real-time NAV Tracked</p>
-            </div>
-          </div>
-
-          {/* Real Estate Module Card */}
-          <div className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 flex flex-col justify-between space-y-4">
-            <div className="flex items-center justify-between text-xs text-slate-500">
-              <span className="font-medium">Internal Real Estate Ledger</span>
-              <Database className="w-3 h-3 text-cyan-400/60" />
-            </div>
-            <div>
-              <h2 className="text-3xl font-semibold text-cyan-400 tracking-tight">₹78,00,000</h2>
-              <p className="text-[10px] text-slate-500 font-mono mt-1">Isolated SQL DB Records</p>
-            </div>
-          </div>
-
-        </div>
-
-        {/* ================= CORE SUBSYSTEM PIPELINES ================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* Equity System Gateway Container */}
-          <div 
-            onClick={() => navigate("/analytics")} 
-            className="bg-slate-950/50 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between space-y-6 hover:border-slate-800 transition-all cursor-pointer group relative overflow-hidden"
-          >
-            <div className="space-y-4">
-              <div className="flex justify-between items-start">
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/5 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4" />
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+        {/* ================= PRIMARY CONSOLIDATED ASSET GRID ================= */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {assetMetrics.map((asset) => (
+            <div 
+              key={asset.id} 
+              className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 flex flex-col justify-between space-y-4"
+            >
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span className="font-medium">{asset.label}</span>
+                {asset.badge ? (
+                  <span className="text-emerald-400 bg-emerald-500/5 px-2 py-0.5 rounded font-mono text-[10px] font-bold">
+                    {asset.badge}
+                  </span>
+                ) : (
+                  asset.icon || <div className="w-1.5 h-1.5 rounded-full bg-emerald-400/80" />
+                )}
               </div>
               <div>
-                <h3 className="text-base font-medium text-slate-200">Equity Pipeline Module</h3>
-                <p className="text-xs text-slate-400 leading-relaxed mt-1.5">
-                  Aggregates and normalizes cross-broker stock holdings, user asset transactions, and portfolio activity feeds.
-                </p>
+                <h2 className="text-2xl lg:text-3xl font-semibold text-white tracking-tight">
+                  {formatIndianCurrency(asset.value)}
+                </h2>
+                <p className="text-[10px] text-slate-500 font-mono mt-1">{asset.subtext}</p>
               </div>
             </div>
-            <div className="pt-4 border-t border-slate-900 flex justify-between items-center text-[10px] font-mono text-slate-500">
-              <span>Security: JWT Access Context</span>
-              <span className="text-emerald-400 bg-emerald-500/5 px-2 py-0.5 rounded">Synced</span>
-            </div>
-          </div>
+          ))}
+        </section>
 
-          {/* Mutual Fund & SIP System Container */}
-          <div 
-            onClick={() => navigate("/mutualfunds")} 
-            className="bg-slate-950/50 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between space-y-6 hover:border-slate-800 transition-all cursor-pointer group relative overflow-hidden"
-          >
-            <div className="space-y-4">
-              <div className="flex justify-between items-start">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                  <RefreshCw className="w-4 h-4" />
+        {/* ================= CORE SUBSYSTEM ENTRY PANELS ================= */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {subsystems.map((subsystem) => (
+            <div 
+              key={subsystem.id}
+              onClick={() => navigate(subsystem.route)} 
+              className="bg-slate-950/50 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between space-y-6 hover:border-slate-800 transition-all cursor-pointer group relative overflow-hidden"
+            >
+              <div className="space-y-4">
+                <div className="flex justify-between items-start">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all ${subsystem.bgIconClass} ${subsystem.textIconClass}`}>
+                    {subsystem.icon}
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-slate-600 group-hover:text-emerald-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-              </div>
-              <div>
-                <h3 className="text-base font-medium text-slate-200">Mutual Fund & SIP Engine</h3>
-                <p className="text-xs text-slate-400 leading-relaxed mt-1.5">
-                  Monitors active systematic investment plans, parses real-time NAV movements, and records investment distributions.
-                </p>
-              </div>
-            </div>
-            <div className="pt-4 border-t border-slate-900 flex justify-between items-center text-[10px] font-mono text-slate-500">
-              <span>Auth: HMAC Signed Signature</span>
-              <span className="text-emerald-400 bg-emerald-500/5 px-2 py-0.5 rounded">Stable</span>
-            </div>
-          </div>
-
-          {/* Internal Real Estate Module Container */}
-          <div 
-            onClick={() => navigate("/sipplans")} // Route to internal property management sub-flows
-            className="bg-slate-950/50 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between space-y-6 hover:border-slate-800 transition-all cursor-pointer group relative overflow-hidden"
-          >
-            <div className="space-y-4">
-              <div className="flex justify-between items-start">
-                <div className="w-9 h-9 rounded-xl bg-cyan-500/5 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
-                  <HomeIcon className="w-4 h-4" />
+                <div>
+                  <h3 className="text-base font-medium text-slate-200 group-hover:text-white transition-colors">
+                    {subsystem.title}
+                  </h3>
+                  <p className="text-xs text-slate-400 leading-relaxed mt-1.5">
+                    {subsystem.description}
+                  </p>
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-slate-600 group-hover:text-cyan-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
               </div>
-              <div>
-                <h3 className="text-base font-medium text-slate-200">Real Estate Ledger Core</h3>
-                <p className="text-xs text-slate-400 leading-relaxed mt-1.5">
-                  Manages internal localized asset properties, title ownership structures, valuation models, and monthly rental income streams.
-                </p>
+              <div className="pt-4 border-t border-slate-900 flex justify-between items-center text-[10px] font-mono text-slate-500">
+                <span>{subsystem.securityProfile}</span>
+                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider
+                  ${subsystem.statusVariant === "success" ? "text-emerald-400 bg-emerald-500/5" : ""}
+                  ${subsystem.statusVariant === "stable" ? "text-emerald-400 bg-emerald-500/5" : ""}
+                  ${subsystem.statusVariant === "native" ? "text-cyan-400 bg-cyan-500/5" : ""}
+                `}>
+                  {subsystem.statusText}
+                </span>
               </div>
             </div>
-            <div className="pt-4 border-t border-slate-900 flex justify-between items-center text-[10px] font-mono text-slate-500">
-              <span>Database: PostgreSQL Schema</span>
-              <span className="text-cyan-400 bg-cyan-500/5 px-2 py-0.5 rounded">Native</span>
-            </div>
-          </div>
+          ))}
+        </section>
 
-        </div>
-
-        {/* ================= OPERATIONAL FAULT RESILIENCY / ALERTS PANEL ================= */}
-        <div className="bg-slate-950/40 border border-slate-900 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        {/* ================= FAULT REGISTRY / ERROR MITIGATION LOGGER ================= */}
+        <footer className="bg-slate-950/40 border border-slate-900 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 select-none">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-xl shrink-0">
               <AlertTriangle className="w-4 h-4" />
             </div>
             <div>
-              <h4 className="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono">Resilience Registry Alert Log</h4>
+              <h4 className="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono">
+                Resilience Registry Alert Log
+              </h4>
               <p className="text-xs text-slate-400 mt-0.5">
                 Downstream Mutual Fund System reported a connection timeout. Handled gracefully via localized circuit degradation thresholds.
               </p>
             </div>
           </div>
-          <div className="text-[10px] font-mono text-slate-500 bg-slate-950 px-2.5 py-1 rounded border border-slate-900 shrink-0 self-end md:self-auto">
-            SYSTEM STATUS: DEGRADED OPERATION CORES
+          <div className={`text-[10px] font-mono bg-slate-950 px-2.5 py-1 rounded border border-slate-900 shrink-0 self-end md:self-auto font-bold transition-colors duration-300
+            ${systemStatus === "ALL SYSTEMS OPERATIONAL" ? "text-emerald-400 border-emerald-950" : "text-amber-500 border-amber-950"}
+          `}>
+            SYSTEM STATUS: {systemStatus}
           </div>
-        </div>
+        </footer>
 
-      </div>
+      </main>
     </div>
   );
 };
