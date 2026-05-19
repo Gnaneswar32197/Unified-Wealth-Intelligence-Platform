@@ -1,13 +1,10 @@
 import { Request, Response } from "express";
+
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { createAuditLog } from "../utils/auditLogger";
 
 import { pool } from "../db";
 
-import {
-  generateToken
-} from "../utils/jwt";
+import { generateToken } from "../utils/jwt";
 
 
 
@@ -15,24 +12,42 @@ import {
    LOGIN
 ====================================================== */
 
-export const login = async (
+export const login =
+async(
   req: Request,
   res: Response
 ) => {
 
   try {
 
-    const { email, password } = req.body;
+    const { email, password } =
+    req.body;
+
+
+
+    /* ==========================================
+       VALIDATION
+    ========================================== */
 
     if (!email || !password) {
 
       return res.status(400).json({
+
         success: false,
-        message: "Email and password required"
+
+        message:
+        "Email and password required"
       });
     }
 
-    const userQuery = await pool.query(
+
+
+    /* ==========================================
+       FIND USER
+    ========================================== */
+
+    const userQuery =
+    await pool.query(
       `
       SELECT
         p.id,
@@ -54,23 +69,50 @@ export const login = async (
       [email]
     );
 
+
+
+    /* ==========================================
+       USER NOT FOUND
+    ========================================== */
+
     if (userQuery.rows.length === 0) {
 
       return res.status(401).json({
+
         success: false,
-        message: "Invalid credentials"
+
+        message:
+        "Invalid credentials"
       });
     }
 
-    const user = userQuery.rows[0];
+
+
+    const user =
+    userQuery.rows[0];
+
+
+
+    /* ==========================================
+       USER INACTIVE
+    ========================================== */
 
     if (!user.is_active) {
 
       return res.status(403).json({
+
         success: false,
-        message: "User inactive"
+
+        message:
+        "User inactive"
       });
     }
+
+
+
+    /* ==========================================
+       PASSWORD CHECK
+    ========================================== */
 
     const isPasswordValid =
     await bcrypt.compare(
@@ -78,77 +120,75 @@ export const login = async (
       user.password_hash
     );
 
+
+
     if (!isPasswordValid) {
 
-  await createAuditLog({
+      return res.status(401).json({
 
-    user_id:user.id,
+        success: false,
 
-    role_id:user.role_id,
-
-    action_type:"LOGIN",
-
-    entity_type:"AUTH",
-
-    entity_id:user.employee_code,
-
-    action_status:"FAILED",
-
-    description:"Invalid password attempt",
-
-    endpoint:req.originalUrl,
-
-    request_method:req.method,
-
-    ip_address:req.ip,
-
-    metadata:{
-      email_attempt:email
+        message:
+        "Invalid credentials"
+      });
     }
-  });
 
-  return res.status(401).json({
-    success: false,
-    message: "Invalid credentials"
-  });
-}
 
-    const token = generateToken(user);
 
-await createAuditLog({
+    /* ==========================================
+       GENERATE JWT TOKEN
+    ========================================== */
 
-  user_id:user.id,
+    const token =
+    generateToken(user);
 
-  role_id:user.role_id,
 
-  action_type:"LOGIN",
 
-  entity_type:"AUTH",
+    /* ==========================================
+       SUCCESS RESPONSE
+    ========================================== */
 
-  entity_id:user.employee_code,
+    return res.status(200).json({
 
-  action_status:"SUCCESS",
+      success: true,
 
-  description:"User logged in successfully",
+      message:
+      "Login successful",
 
-  endpoint:req.originalUrl,
+      token,
 
-  request_method:req.method,
+      user: {
 
-  ip_address:req.ip,
+        id:
+        user.id,
 
-  metadata:{
-    browser:req.headers["user-agent"]
-  }
-});
+        full_name:
+        user.full_name,
+
+        email:
+        user.email,
+
+        role:
+        user.role_name,
+
+        employee_code:
+        user.employee_code
+      }
+    });
 
   } catch (error) {
 
-    console.log(error);
+    console.log(
+      "LOGIN ERROR:",
+      error
+    );
 
     return res.status(500).json({
+
       success: false,
-      message: "Internal server error"
+
+      message:
+      "Internal server error"
     });
   }
 };
@@ -159,16 +199,20 @@ await createAuditLog({
    LOGOUT
 ====================================================== */
 
-export const logout = async (
-  req: any,
+export const logout =
+async(
+  req: Request,
   res: Response
 ) => {
 
   try {
 
     return res.status(200).json({
+
       success:true,
-      message:"Logout successful"
+
+      message:
+      "Logout successful"
     });
 
   } catch (error) {
@@ -176,8 +220,11 @@ export const logout = async (
     console.log(error);
 
     return res.status(500).json({
+
       success:false,
-      message:"Internal server error"
+
+      message:
+      "Internal server error"
     });
   }
 };
@@ -188,45 +235,19 @@ export const logout = async (
    CURRENT USER
 ====================================================== */
 
-export const getCurrentUser = async (
+export const getCurrentUser =
+async(
   req:any,
   res:Response
 ) => {
 
   try {
 
-    const userQuery =
-    await pool.query(
-      `
-      SELECT
-        p.id,
-        p.full_name,
-        p.email,
-        p.employee_code,
-        p.is_active,
-        r.role_name
-
-      FROM platform_users p
-
-      JOIN roles r
-      ON p.role_id = r.id
-
-      WHERE p.id = $1
-      `,
-      [req.user.id]
-    );
-
-    if(userQuery.rows.length === 0){
-
-      return res.status(404).json({
-        success:false,
-        message:"User not found"
-      });
-    }
-
     return res.status(200).json({
+
       success:true,
-      user:userQuery.rows[0]
+
+      user:req.user
     });
 
   } catch (error) {
@@ -234,8 +255,11 @@ export const getCurrentUser = async (
     console.log(error);
 
     return res.status(500).json({
+
       success:false,
-      message:"Internal server error"
+
+      message:
+      "Internal server error"
     });
   }
 };
@@ -257,54 +281,23 @@ async(
     const token =
     generateToken(req.user);
 
-    await createAuditLog({
-
-      user_id:req.user.id,
-
-      role_id:req.user.role_id,
-
-      action_type:"REFRESH_TOKEN",
-
-      action_status:"SUCCESS",
-
-      description:"JWT token refreshed",
-
-      endpoint:req.originalUrl,
-
-      request_method:req.method,
-
-      ip_address:req.ip
-    });
-
     return res.status(200).json({
+
       success:true,
+
       token
     });
 
-  } catch (error:any) {
+  } catch (error) {
 
-    await createAuditLog({
-
-      user_id:req.user?.id,
-
-      role_id:req.user?.role_id,
-
-      action_type:"API_FAILURE",
-
-      action_status:"FAILED",
-
-      description:error.message,
-
-      endpoint:req.originalUrl,
-
-      request_method:req.method,
-
-      ip_address:req.ip
-    });
+    console.log(error);
 
     return res.status(500).json({
+
       success:false,
-      message:"Internal server error"
+
+      message:
+      "Internal server error"
     });
   }
 };

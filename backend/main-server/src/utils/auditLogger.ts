@@ -1,7 +1,5 @@
 import { pool } from "../db";
 
-
-
 interface AuditLogParams {
 
   user_id?: number;
@@ -39,6 +37,8 @@ async(
 ) => {
 
   try {
+
+    console.log("AUDIT LOG START");
 
     await pool.query(
       `
@@ -82,6 +82,8 @@ async(
         params.metadata || null
       ]
     );
+
+    console.log("AUDIT LOG SUCCESS");
 
   } catch (error) {
 
