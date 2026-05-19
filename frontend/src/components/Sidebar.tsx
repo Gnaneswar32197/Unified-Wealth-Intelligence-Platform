@@ -1,82 +1,168 @@
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context.tsx';
 import {
   LayoutDashboard,
-  Landmark,
-  Building2,
-  WalletCards,
-  Settings
-} from "lucide-react"
+  Users,
+  Activity,
+  Building,
+  HeartPulse,
+  ServerCog,
+  Bell,
+  FileSearch,
+  UserPlus,
+  Settings2,
+  KeyRound,
+  ShieldCheck,
+  BarChart3,
+  Database,
+  LogOut,
+} from 'lucide-react';
 
-import { Link } from "react-router-dom"
+const makeLinkClass = (currentPath: string, path: string) =>
+  `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+    currentPath === path ? 'bg-emerald-600/10 text-emerald-400' : 'text-slate-400 hover:text-emerald-300'
+  }`;
 
-const Sidebar = () => {
+export default function Sidebar() {
+  const location = useLocation();
+  const { logout, user } = useAuth();
+  const currentPath = location.pathname;
+
+  const mainLinks = [
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  ];
+
+  const superAdminLinks = [
+    { to: '/dashboard/investors', label: 'Investors', icon: Users },
+    { to: '/dashboard/sip-monitoring', label: 'SIP Monitoring', icon: Activity },
+    { to: '/dashboard/real-estate', label: 'Real Estate', icon: Building },
+    { to: '/dashboard/service-health', label: 'Service Health', icon: HeartPulse },
+    { to: '/dashboard/api-monitoring', label: 'API Monitoring', icon: ServerCog },
+    { to: '/dashboard/alerts', label: 'Alerts', icon: Bell },
+    { to: '/dashboard/audit-logs', label: 'Audit Logs', icon: FileSearch },
+    { to: '/dashboard/users', label: 'Users', icon: UserPlus },
+    { to: '/dashboard/settings', label: 'Settings', icon: Settings2 },
+  ];
+
+  const superAdminTools = [
+    { to: '/dashboard/user-management', label: 'User Management', icon: Users },
+    { to: '/dashboard/role-management', label: 'Role Management', icon: KeyRound },
+    { to: '/dashboard/service-monitoring', label: 'Service Monitoring', icon: Database },
+    { to: '/dashboard/api-governance', label: 'API Governance', icon: ShieldCheck },
+    { to: '/dashboard/system-analytics', label: 'System Analytics', icon: BarChart3 },
+  ];
+
+  const adminLinks = [
+    { to: '/dashboard/admin', label: 'Admin Dashboard', icon: ShieldCheck },
+  ];
 
   return (
+    <aside className="w-80 bg-slate-950 border-r border-slate-800 flex flex-col justify-between h-full">
+      <div className="p-6">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="h-10 w-10 rounded-2xl bg-emerald-500 flex items-center justify-center text-slate-950 font-bold">W</div>
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-emerald-400">Super Admin</p>
+            <p className="text-xs text-slate-500">Platform controller</p>
+          </div>
+        </div>
 
-    <div className="w-[280px] min-h-screen bg-[#0f172a] border-r border-slate-800 text-white p-6">
+        <nav className="space-y-1">
+          {mainLinks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link key={item.to} to={item.to} className={makeLinkClass(currentPath, item.to)}>
+                <Icon size={18} />
+                {item.label}
+              </Link>
+            );
+          })}
 
-      {/* LOGO */}
+          {adminLinks.map((item) => {
+            if (!['Admin', 'SuperAdmin'].includes(user?.role || '')) return null;
+            const Icon = item.icon;
+            return (
+              <Link key={item.to} to={item.to} className={makeLinkClass(currentPath, item.to)}>
+                <Icon size={18} />
+                {item.label}
+              </Link>
+            );
+          })}
 
-      <div className="mb-14">
+          {/* Operational Roles Section */}
+          {['RM', 'Advisory', 'Operations', 'Compliance', 'Security', 'Admin', 'SuperAdmin'].includes(user?.role || '') && (
+            <>
+              <div className="mt-6 mb-2 px-4 text-xs uppercase tracking-[0.28em] text-slate-500">Operational Desks</div>
+              {['RM', 'Admin', 'SuperAdmin'].includes(user?.role || '') && (
+                <Link to="/dashboard/rm" className={makeLinkClass(currentPath, '/dashboard/rm')}>
+                  <Users size={18} />
+                  RM Client Book
+                </Link>
+              )}
+              {['Advisory', 'Admin', 'SuperAdmin'].includes(user?.role || '') && (
+                <Link to="/dashboard/advisory" className={makeLinkClass(currentPath, '/dashboard/advisory')}>
+                  <BarChart3 size={18} />
+                  Advisory Panel
+                </Link>
+              )}
+              {['Operations', 'Admin', 'SuperAdmin'].includes(user?.role || '') && (
+                <Link to="/dashboard/operations" className={makeLinkClass(currentPath, '/dashboard/operations')}>
+                  <ServerCog size={18} />
+                  Operations Desk
+                </Link>
+              )}
+              {['Compliance', 'Admin', 'SuperAdmin'].includes(user?.role || '') && (
+                <Link to="/dashboard/compliance" className={makeLinkClass(currentPath, '/dashboard/compliance')}>
+                  <FileSearch size={18} />
+                  Compliance Reports
+                </Link>
+              )}
+              {['Security', 'Admin', 'SuperAdmin'].includes(user?.role || '') && (
+                <Link to="/dashboard/security" className={makeLinkClass(currentPath, '/dashboard/security')}>
+                  <ShieldCheck size={18} />
+                  Security Center
+                </Link>
+              )}
+            </>
+          )}
 
-        <h1 className="text-3xl font-bold text-blue-500">
-          WealthX
-        </h1>
+          {user?.role === 'SuperAdmin' && (
+            <>
+              <div className="mt-6 mb-2 px-4 text-xs uppercase tracking-[0.28em] text-slate-500">Super Admin Controls</div>
+              {superAdminLinks.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link key={item.to} to={item.to} className={makeLinkClass(currentPath, item.to)}>
+                    <Icon size={18} />
+                    {item.label}
+                  </Link>
+                );
+              })}
 
-        <p className="text-slate-400 mt-2 text-sm">
-          Unified Wealth Intelligence
-        </p>
-
+              <div className="mt-6 mb-2 px-4 text-xs uppercase tracking-[0.28em] text-slate-500">Platform Operations</div>
+              {superAdminTools.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link key={item.to} to={item.to} className={makeLinkClass(currentPath, item.to)}>
+                    <Icon size={18} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </>
+          )}
+        </nav>
       </div>
 
-      {/* MENU */}
-
-      <div className="flex flex-col gap-4">
-
-        <Link
-          to="/dashboard"
-          className="flex items-center gap-4 hover:bg-slate-800 p-4 rounded-xl duration-300"
+      <div className="p-4 border-t border-slate-800">
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 rounded-lg"
         >
-          <LayoutDashboard />
-          Dashboard
-        </Link>
-
-        <Link
-          to="/equity"
-          className="flex items-center gap-4 hover:bg-slate-800 p-4 rounded-xl duration-300"
-        >
-          <Landmark />
-          Equity Investment
-        </Link>
-
-        <Link
-          to="/mutualfunds"
-          className="flex items-center gap-4 hover:bg-slate-800 p-4 rounded-xl duration-300"
-        >
-          <WalletCards />
-          Mutual Funds & SIP
-        </Link>
-
-        <Link
-          to="/realestate"
-          className="flex items-center gap-4 hover:bg-slate-800 p-4 rounded-xl duration-300"
-        >
-          <Building2 />
-          Real Estate
-        </Link>
-
-        <Link
-          to="/settings"
-          className="flex items-center gap-4 hover:bg-slate-800 p-4 rounded-xl duration-300"
-        >
-          <Settings />
-          Settings
-        </Link>
-
+          <LogOut size={18} />
+          Terminate Session
+        </button>
       </div>
-
-    </div>
-
-  )
+    </aside>
+  );
 }
-
-export default Sidebar
