@@ -3,8 +3,12 @@ dotenv.config();
 
 import app from "./app";
 
-const PORT = process.env.PORT || 5002;
+const PORT =
+  process.env.PORT || 5002;
 
 app.listen(PORT, () => {
-  console.log(`Mutual Fund Service running on ${PORT}`);
+
+  console.log(
+    `MF Service Running on ${PORT}`
+  );
 });
