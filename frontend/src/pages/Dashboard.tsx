@@ -1,322 +1,112 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import {
-  Bell,
-  Search,
-  Cpu,
-  ShieldCheck,
-  UserCheck,
-  RefreshCw,
-  TrendingUp,
-  ArrowUpRight,
-  Home as HomeIcon,
-  Database,
-  AlertTriangle,
-  Lock
-} from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context.tsx';
+import { Navigate, Link } from 'react-router-dom';
+import DashboardCard from '../components/DashboardCard';
+import { Wallet, ShieldCheck, PieChart, Activity, ExternalLink } from 'lucide-react';
+import '../styles/dashboard.css';
 
-// ==========================================
-// TYPE DEFINITIONS & ARCHITECTURAL SCHEMAS
-// ==========================================
-interface AssetMetric {
-  id: string;
-  label: string;
-  value: number;
-  badge?: string;
-  subtext: string;
-  icon?: React.ReactNode;
-}
+export default function Dashboard() {
+  const { user } = useAuth();
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-interface SubsystemPipeline {
-  id: string;
-  title: string;
-  description: string;
-  route: string;
-  securityProfile: string;
-  statusText: string;
-  statusVariant: "success" | "stable" | "native";
-  icon: React.ReactNode;
-  bgIconClass: string;
-  textIconClass: string;
-}
+  // Auto-redirect specific roles to their dedicated workspaces
+  if (user && !['Admin', 'SuperAdmin'].includes(user.role)) {
+    if (user.role === 'RM') return <Navigate to="/dashboard/rm" replace />;
+    if (user.role === 'Advisory') return <Navigate to="/dashboard/advisory" replace />;
+    if (user.role === 'Operations') return <Navigate to="/dashboard/operations" replace />;
+    if (user.role === 'Compliance') return <Navigate to="/dashboard/compliance" replace />;
+    if (user.role === 'Security') return <Navigate to="/dashboard/security" replace />;
+  }
 
-const Dashboard = () => {
-  const navigate = useNavigate();
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [systemStatus, setSystemStatus] = useState<string>("DEGRADED OPERATION CORES");
-
-  // ==========================================
-  // UTILITY: INDIAN FINANCIAL CURRENCY FORMATTER
-  // ==========================================
-  const formatIndianCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
-
-  // ==========================================
-  // DATA CORE: CORE ASSET METRICS
-  // ==========================================
-  const assetMetrics: AssetMetric[] = [
-    {
-      id: "total_portfolio",
-      label: "Total Portfolio Asset Base",
-      value: 28450000,
-      badge: "+12.4%",
-      subtext: "Cross-System Aggregate"
-    },
-    {
-      id: "equity_holdings",
-      label: "Equity Holdings Portfolio",
-      value: 12400000,
-      subtext: "External API Verified",
-      icon: <Lock className="w-3 h-3 text-indigo-400/60" />
-    },
-    {
-      id: "mutual_funds",
-      label: "Mutual Fund Assets (SIP)",
-      value: 8250000,
-      subtext: "Real-time NAV Tracked"
-    },
-    {
-      id: "real_estate",
-      label: "Internal Real Estate Ledger",
-      value: 7800000,
-      subtext: "Isolated SQL DB Records",
-      icon: <Database className="w-3 h-3 text-cyan-400/60" />
+  useEffect(() => {
+    async function fetchPlatformStats() {
+      try {
+        const token = localStorage.getItem('wealth-token');
+        const res = await fetch('http://localhost:5000/api/rm/dashboard', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setStats(data.dashboard);
+        }
+      } catch (err) {
+        console.error("Failed to fetch consolidated metrics, using fallback:", err);
+        // Fallback stats
+        setStats({
+          total_investors: 3,
+          total_platform_users: 6,
+          recent_activity: []
+        });
+      } finally {
+        setLoading(false);
+      }
     }
-  ];
-
-  // ==========================================
-  // DATA CORE: DOWNSTREAM PIPELINE CONFIG
-  // ==========================================
-  const subsystems: SubsystemPipeline[] = [
-    {
-      id: "equity_pipeline",
-      title: "Equity Pipeline Module",
-      description: "Aggregates and normalizes cross-broker stock holdings, user asset transactions, and portfolio activity feeds.",
-      route: "/analytics",
-      securityProfile: "Security: JWT Access Context",
-      statusText: "Synced",
-      statusVariant: "success",
-      icon: <TrendingUp className="w-4 h-4" />,
-      bgIconClass: "bg-indigo-500/5 border-indigo-500/20",
-      textIconClass: "text-indigo-400 group-hover:text-indigo-400"
-    },
-    {
-      id: "mutual_fund_engine",
-      title: "Mutual Fund & SIP Engine",
-      description: "Monitors active systematic investment plans, parses real-time NAV movements, and records investment distributions.",
-      route: "/mutualfunds",
-      securityProfile: "Auth: HMAC Signed Signature",
-      statusText: "Stable",
-      statusVariant: "stable",
-      icon: <RefreshCw className="w-4 h-4" />,
-      bgIconClass: "bg-emerald-500/5 border-emerald-500/20",
-      textIconClass: "text-emerald-400 group-hover:text-emerald-400"
-    },
-    {
-      id: "real_estate_core",
-      title: "Real Estate Ledger Core",
-      description: "Manages internal localized asset properties, title ownership structures, valuation models, and monthly rental income streams.",
-      route: "/sipplans",
-      securityProfile: "Database: PostgreSQL Schema",
-      statusText: "Native",
-      statusVariant: "native",
-      icon: <HomeIcon className="w-4 h-4" />,
-      bgIconClass: "bg-cyan-500/5 border-cyan-500/20",
-      textIconClass: "text-cyan-400 group-hover:text-cyan-400"
-    }
-  ];
-
-  // ==========================================
-  // HANDLER: CORE PIPELINE RE-RECONCILIATION
-  // ==========================================
-  const handlePipelineSync = (): void => {
-    setIsSyncing(true);
-    setTimeout(() => {
-      setIsSyncing(false);
-      setSystemStatus("ALL SYSTEMS OPERATIONAL");
-    }, 1500);
-  };
+    fetchPlatformStats();
+  }, []);
 
   return (
-    <div className="flex bg-[#030712] min-h-screen text-slate-100 font-sans antialiased selection:bg-cyan-500/20 selection:text-cyan-400">
-      
-      {/* INTEGRATED SIDEBAR NAVIGATION */}
-      <Sidebar />
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Main Consolidated Overview</h2>
+          <p className="text-sm text-gray-400">Total cross-asset analytics aggregation system</p>
+        </div>
+        <div className="px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-xs font-mono text-gray-400 flex items-center gap-2">
+          Platform Status: <span className="text-emerald-400 font-bold">ONLINE</span>
+        </div>
+      </div>
 
-      {/* CORE WORKSPACE AREA */}
-      <main className="flex-1 p-8 lg:p-10 space-y-8 overflow-y-auto max-w-[1600px] mx-auto w-full">
-        
-        {/* ================= TOP APPLICATION BAR ================= */}
-        <section className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-900 pb-6">
-          
-          {/* Global Multi-Asset Search Input */}
-          <div className="bg-slate-950/60 border border-slate-900 focus-within:border-slate-800 transition-colors flex items-center px-4 py-2.5 rounded-xl w-full sm:w-[380px]">
-            <Search className="text-slate-500 w-4 h-4 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search unified identities or assets..."
-              className="bg-transparent outline-none ml-3 text-xs text-slate-200 placeholder-slate-500 w-full"
-            />
-          </div>
+      <div className="dashboard-grid">
+        <DashboardCard 
+          title="Consolidated Investors" 
+          value={loading ? "..." : `${stats?.total_investors || 0} Registered`} 
+          icon={Wallet} 
+          subtext="Total unified client portfolios" 
+        />
+        <DashboardCard 
+          title="Platform Operators" 
+          value={loading ? "..." : `${stats?.total_platform_users || 0} Accounts`} 
+          icon={PieChart} 
+          subtext="Active staff logins & roles" 
+        />
+        <DashboardCard 
+          title="System Risk Index" 
+          value="Low Risk (0.22)" 
+          change="Stable" 
+          isPositive={true} 
+          icon={ShieldCheck} 
+          subtext="Dynamic compliance vector score" 
+        />
+        <DashboardCard 
+          title="Live API Gateway Nodes" 
+          value="3 Online" 
+          change="100%" 
+          isPositive={true} 
+          icon={Activity} 
+          subtext="Main-Server, Equity, Mutual Fund" 
+        />
+      </div>
 
-          {/* Infrastructure Health Telemetry Metrics */}
-          <div className="flex items-center gap-4 self-end sm:self-auto">
-            
-            {/* Caching and Gatekeeper Threshold Status Labels */}
-            <div className="hidden lg:flex items-center gap-3 font-mono text-[10px] bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-900 select-none">
-              <div className="flex items-center gap-1 text-slate-500">
-                <Cpu className="w-3 h-3 text-cyan-500/70" />
-                <span>Redis: Active</span>
-              </div>
-              <span className="text-slate-800">|</span>
-              <div className="flex items-center gap-1 text-slate-500">
-                <ShieldCheck className="w-3 h-3 text-emerald-500/70" />
-                <span>Rate Limit: 60/m</span>
-              </div>
-            </div>
-
-            {/* Notification Interface Node */}
-            <button className="relative bg-slate-950 p-2.5 rounded-xl border border-slate-900 text-slate-400 hover:text-white transition-colors focus:outline-none focus:border-slate-700">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-            </button>
-
-            {/* Operational Role Profile Context */}
-            <div className="flex items-center gap-3 bg-slate-950 pl-3 pr-4 py-1.5 rounded-xl border border-slate-900 select-none">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-emerald-500 flex items-center justify-center text-slate-950 font-bold text-xs">
-                RM
-              </div>
-              <div className="text-left hidden md:block">
-                <p className="text-xs font-semibold text-slate-200">L. Richards</p>
-                <span className="text-[9px] uppercase tracking-wider text-slate-500 font-mono block">Rel. Manager</span>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-        {/* ================= WORKSPACE HEADLINE HEADER ================= */}
-        <section className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 bg-slate-950 border border-slate-900 px-3 py-1 rounded-md text-slate-500 text-[10px] uppercase tracking-wider font-mono mb-3 select-none">
-              <UserCheck className="w-3 h-3 text-cyan-400" />
-              <span>Cross-Service Investor Mapping: Secure</span>
-            </div>
-            <h1 className="text-3xl lg:text-4xl font-normal text-white tracking-tight">
-              Consolidated Wealth Dashboard
-            </h1>
-            <p className="text-slate-400 mt-1 text-sm">
-              Aggregated portfolio visualization across disparate core infrastructure environments.
-            </p>
-          </div>
-
-          {/* Core Pipeline Re-conciliation Action Trigger */}
-          <button 
-            onClick={handlePipelineSync}
-            disabled={isSyncing}
-            className="flex items-center gap-2 bg-slate-950 hover:bg-slate-900 text-slate-300 px-4 py-2 rounded-xl text-xs font-medium border border-slate-900 transition-all font-mono disabled:opacity-50 focus:outline-none"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{isSyncing ? "Reconciling..." : "Force Pipeline Re-Sync"}</span>
-          </button>
-        </section>
-
-        {/* ================= PRIMARY CONSOLIDATED ASSET GRID ================= */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {assetMetrics.map((asset) => (
-            <div 
-              key={asset.id} 
-              className="bg-slate-950/40 p-6 rounded-2xl border border-slate-900 flex flex-col justify-between space-y-4"
-            >
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span className="font-medium">{asset.label}</span>
-                {asset.badge ? (
-                  <span className="text-emerald-400 bg-emerald-500/5 px-2 py-0.5 rounded font-mono text-[10px] font-bold">
-                    {asset.badge}
-                  </span>
-                ) : (
-                  asset.icon || <div className="w-1.5 h-1.5 rounded-full bg-emerald-400/80" />
-                )}
-              </div>
-              <div>
-                <h2 className="text-2xl lg:text-3xl font-semibold text-white tracking-tight">
-                  {formatIndianCurrency(asset.value)}
-                </h2>
-                <p className="text-[10px] text-slate-500 font-mono mt-1">{asset.subtext}</p>
-              </div>
-            </div>
-          ))}
-        </section>
-
-        {/* ================= CORE SUBSYSTEM ENTRY PANELS ================= */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {subsystems.map((subsystem) => (
-            <div 
-              key={subsystem.id}
-              onClick={() => navigate(subsystem.route)} 
-              className="bg-slate-950/50 border border-slate-900 rounded-2xl p-6 flex flex-col justify-between space-y-6 hover:border-slate-800 transition-all cursor-pointer group relative overflow-hidden"
-            >
-              <div className="space-y-4">
-                <div className="flex justify-between items-start">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all ${subsystem.bgIconClass} ${subsystem.textIconClass}`}>
-                    {subsystem.icon}
-                  </div>
-                  <ArrowUpRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-                </div>
-                <div>
-                  <h3 className="text-base font-medium text-slate-200 group-hover:text-white transition-colors">
-                    {subsystem.title}
-                  </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed mt-1.5">
-                    {subsystem.description}
-                  </p>
-                </div>
-              </div>
-              <div className="pt-4 border-t border-slate-900 flex justify-between items-center text-[10px] font-mono text-slate-500">
-                <span>{subsystem.securityProfile}</span>
-                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider
-                  ${subsystem.statusVariant === "success" ? "text-emerald-400 bg-emerald-500/5" : ""}
-                  ${subsystem.statusVariant === "stable" ? "text-emerald-400 bg-emerald-500/5" : ""}
-                  ${subsystem.statusVariant === "native" ? "text-cyan-400 bg-cyan-500/5" : ""}
-                `}>
-                  {subsystem.statusText}
-                </span>
-              </div>
-            </div>
-          ))}
-        </section>
-
-        {/* ================= FAULT REGISTRY / ERROR MITIGATION LOGGER ================= */}
-        <footer className="bg-slate-950/40 border border-slate-900 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 select-none">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-xl shrink-0">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        {[
+          { title: 'Equity Markets Portfolio', desc: 'Direct market feeds, order execution blocks, and single-name equity models.', link: '/dashboard/equity' },
+          { title: 'Mutual Funds & Pools', desc: 'Sovereign wealth pools, dynamic systematic transfer strategies, and NAV valuations.', link: '/dashboard/mutual-funds' },
+          { title: 'Real Estate Ledger', desc: 'Direct real asset custody, yield metrics, mortgage configurations, and appraisal logs.', link: '/dashboard/real-estate' },
+        ].map((block, idx) => (
+          <div key={idx} className="bg-gray-900 border border-gray-800 rounded-xl p-6 flex flex-col justify-between crypto-glow-card">
             <div>
-              <h4 className="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono">
-                Resilience Registry Alert Log
-              </h4>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Downstream Mutual Fund System reported a connection timeout. Handled gracefully via localized circuit degradation thresholds.
-              </p>
+              <h4 className="font-bold text-gray-200 mb-2">{block.title}</h4>
+              <p className="text-sm text-gray-400 leading-relaxed mb-6">{block.desc}</p>
             </div>
+            <Link to={block.link} className="flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors uppercase tracking-wider">
+              Inspect Asset Block <ExternalLink size={14} />
+            </Link>
           </div>
-          <div className={`text-[10px] font-mono bg-slate-950 px-2.5 py-1 rounded border border-slate-900 shrink-0 self-end md:self-auto font-bold transition-colors duration-300
-            ${systemStatus === "ALL SYSTEMS OPERATIONAL" ? "text-emerald-400 border-emerald-950" : "text-amber-500 border-amber-950"}
-          `}>
-            SYSTEM STATUS: {systemStatus}
-          </div>
-        </footer>
-
-      </main>
+        ))}
+      </div>
     </div>
   );
-};
-
-export default Dashboard;
+}
