@@ -1,0 +1,15 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.crypto-glow-card {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.crypto-glow-card:hover {
+  box-shadow: 0 0 30px -5px rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
