@@ -3,11 +3,6 @@ import { Request, Response } from "express";
 import { pool } from "../db";
 
 
-
-/* ======================================================
-   GET ALL MARKET PRICES
-====================================================== */
-
 export const getMarketPrices =
 async(
   req:Request,
@@ -57,10 +52,6 @@ async(
 };
 
 
-
-/* ======================================================
-   GET STOCK BY SYMBOL
-====================================================== */
 
 export const getMarketPriceBySymbol =
 async(

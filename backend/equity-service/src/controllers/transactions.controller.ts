@@ -4,10 +4,6 @@ import { pool } from "../db";
 
 
 
-/* ======================================================
-   GET TRANSACTIONS BY INVESTOR
-====================================================== */
-
 export const getTransactionsByInvestor =
 async(
   req:Request,
@@ -67,10 +63,6 @@ async(
 };
 
 
-
-/* ======================================================
-   CREATE TRANSACTION
-====================================================== */
 
 export const createTransaction =
 async(
@@ -160,9 +152,6 @@ async(
 
 
 
-/* ======================================================
-   TRANSACTION HISTORY
-====================================================== */
 
 export const getTransactionHistory =
 async(

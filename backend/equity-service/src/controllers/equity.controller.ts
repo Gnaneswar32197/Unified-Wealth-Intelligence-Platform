@@ -4,9 +4,6 @@ import { pool } from "../db/index";
 
 
 
-/* ======================================================
-   GET ALL EQUITY USERS
-====================================================== */
 
 export const getEquityUsers =
 async(
@@ -53,9 +50,6 @@ async(
 
 
 
-/* ======================================================
-   GET EQUITY USER BY ID
-====================================================== */
 
 export const getEquityUserById =
 async(

@@ -10,17 +10,15 @@ import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard.tsx';
 import EquityDashboard from '../pages/EquityDashboard';
 import MutualFundDashboard from '../pages/MutualFundDashboard';
-import RealEstateDashboard from '../pages/RealEstateDashboard';
 import AdminDashboard from '../pages/AdminDashboard';
 import RMDashboard from '../pages/RMDashboard';
-import AdvisoryDashboard from '../pages/AdminDashboard.tsx';
+import AdvisoryDashboard from '../pages/AdvisoryDashboard.tsx';
 import OperationsDashboard from '../pages/OperationsDashboard';
 import ComplianceDashboard from '../pages/ComplianceDashboard';
 import SecurityDashboard from '../pages/SecurityDashboard';
 import Investors from '../pages/Investors';
 import SIPMonitoring from '../pages/SIPMonitoring';
 import ServiceHealth from '../pages/ServiceHealth';
-import ApiMonitoring from '../pages/ApiMonitoring';
 import Alerts from '../pages/Alerts';
 import UserManagement from '../pages/UserManagement';
 import RoleManagement from '../pages/RoleManagement';
@@ -28,7 +26,24 @@ import ServiceMonitoring from '../pages/ServiceMonitoring';
 import AuditLogs from '../pages/AuditLogs';
 import ApiGovernance from '../pages/ApiGovernance';
 import SystemAnalytics from '../pages/SystemAnalytics';
-import Settings from '../pages/Settings';
+
+// New role-based pages
+import Portfolio from '../pages/Portfolio';
+import Performance from '../pages/Performance';
+import Analytics from '../pages/Analytics';
+import Diversification from '../pages/Diversification';
+import RiskAnalysis from '../pages/RiskAnalysis';
+import Recommendations from '../pages/Recommendations';
+import InactiveInvestors from '../pages/InactiveInvestors';
+import ServiceFailures from '../pages/ServiceFailures';
+import Reconciliation from '../pages/Reconciliation';
+import ComplianceReports from '../pages/ComplianceReports';
+import AccessLogs from '../pages/AccessLogs';
+import ActivityLogs from '../pages/ActivityLogs';
+import SecurityLogins from '../pages/SecurityLogins';
+import Sessions from '../pages/Sessions';
+import FailedAttempts from '../pages/FailedAttempts';
+import TokenActivity from '../pages/TokenActivity';
 
 const DashboardLayout = () => {
   const { user } = useAuth();
@@ -50,7 +65,21 @@ const DashboardLayout = () => {
 // Role Guard Component
 const RoleGuard = ({ allowedRoles }: { allowedRoles: string[] }) => {
   const { user } = useAuth();
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user) return <Navigate to="/login" replace />;
+
+  const upperUserRole = user.role.toUpperCase();
+  const upperAllowedRoles = allowedRoles.map(r => r.toUpperCase());
+
+  const isMatch = upperAllowedRoles.some(r => {
+    if (r === upperUserRole) return true;
+    if (r === 'SUPERADMIN' && upperUserRole === 'ADMIN') return true;
+    if (r === 'ADMIN' && upperUserRole === 'SUPERADMIN') return true;
+    if (r === 'ADVISORY' && upperUserRole === 'ADVISOR') return true;
+    if (r === 'ADVISOR' && upperUserRole === 'ADVISORY') return true;
+    return false;
+  });
+
+  if (!isMatch) {
     return <Navigate to="/dashboard" replace />;
   }
   return <Outlet />;
@@ -70,71 +99,115 @@ export default function AppRoutes() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/equity" element={<EquityDashboard />} />
           <Route path="/dashboard/mutual-funds" element={<MutualFundDashboard />} />
-          <Route path="/dashboard/real-estate" element={<RealEstateDashboard />} />
 
-          <Route path="/dashboard/investors" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
+          {/* RM & Admin Routes */}
+          <Route path="/dashboard/investors" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'RM']} />}>
             <Route index element={<Investors />} />
           </Route>
-          <Route path="/dashboard/sip-monitoring" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<SIPMonitoring />} />
+          <Route path="/dashboard/portfolio" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'RM']} />}>
+            <Route index element={<Portfolio />} />
           </Route>
-          <Route path="/dashboard/service-health" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<ServiceHealth />} />
-          </Route>
-          <Route path="/dashboard/api-monitoring" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<ApiMonitoring />} />
-          </Route>
-          <Route path="/dashboard/alerts" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<Alerts />} />
-          </Route>
-          <Route path="/dashboard/audit-logs" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<AuditLogs />} />
-          </Route>
-          <Route path="/dashboard/users" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<UserManagement />} />
-          </Route>
-          <Route path="/dashboard/settings" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<Settings />} />
-          </Route>
-          <Route path="/dashboard/user-management" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<UserManagement />} />
-          </Route>
-          <Route path="/dashboard/role-management" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<RoleManagement />} />
-          </Route>
-          <Route path="/dashboard/service-monitoring" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<ServiceMonitoring />} />
-          </Route>
-          <Route path="/dashboard/api-governance" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<ApiGovernance />} />
-          </Route>
-          <Route path="/dashboard/system-analytics" element={<RoleGuard allowedRoles={['SuperAdmin']} />}>
-            <Route index element={<SystemAnalytics />} />
+          <Route path="/dashboard/performance" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'RM']} />}>
+            <Route index element={<Performance />} />
           </Route>
 
-          {/* Internal Professional/Staff Dashboards */}
+          {/* Advisor & Admin Routes */}
+          <Route path="/dashboard/analytics" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Advisory', 'Advisor']} />}>
+            <Route index element={<Analytics />} />
+          </Route>
+          <Route path="/dashboard/diversification" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Advisory', 'Advisor']} />}>
+            <Route index element={<Diversification />} />
+          </Route>
+          <Route path="/dashboard/risk-analysis" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Advisory', 'Advisor']} />}>
+            <Route index element={<RiskAnalysis />} />
+          </Route>
+          <Route path="/dashboard/recommendations" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Advisory', 'Advisor']} />}>
+            <Route index element={<Recommendations />} />
+          </Route>
+
+          {/* Operations & Admin Routes */}
+          <Route path="/dashboard/sip-monitoring" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Operations']} />}>
+            <Route index element={<SIPMonitoring />} />
+          </Route>
+          <Route path="/dashboard/inactive-investors" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Operations']} />}>
+            <Route index element={<InactiveInvestors />} />
+          </Route>
+          <Route path="/dashboard/service-failures" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Operations']} />}>
+            <Route index element={<ServiceFailures />} />
+          </Route>
+          <Route path="/dashboard/reconciliation" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Operations']} />}>
+            <Route index element={<Reconciliation />} />
+          </Route>
+
+          {/* Compliance & Admin Routes */}
+          <Route path="/dashboard/compliance-reports" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Compliance']} />}>
+            <Route index element={<ComplianceReports />} />
+          </Route>
+          <Route path="/dashboard/access-logs" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Compliance']} />}>
+            <Route index element={<AccessLogs />} />
+          </Route>
+          <Route path="/dashboard/activity-logs" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Compliance']} />}>
+            <Route index element={<ActivityLogs />} />
+          </Route>
+
+          {/* Security & Admin Routes */}
+          <Route path="/dashboard/security-logins" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Security']} />}>
+            <Route index element={<SecurityLogins />} />
+          </Route>
+          <Route path="/dashboard/sessions" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Security']} />}>
+            <Route index element={<Sessions />} />
+          </Route>
+          <Route path="/dashboard/failed-attempts" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Security']} />}>
+            <Route index element={<FailedAttempts />} />
+          </Route>
+          <Route path="/dashboard/token-activity" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin', 'Security']} />}>
+            <Route index element={<TokenActivity />} />
+          </Route>
+
+          {/* SuperAdmin/Admin Only Governance */}
+          <Route path="/dashboard/user-management" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin']} />}>
+            <Route index element={<UserManagement />} />
+          </Route>
+          <Route path="/dashboard/role-management" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin']} />}>
+            <Route index element={<RoleManagement />} />
+          </Route>
+          <Route path="/dashboard/service-monitoring" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin']} />}>
+            <Route index element={<ServiceMonitoring />} />
+          </Route>
+          <Route path="/dashboard/api-governance" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin']} />}>
+            <Route index element={<ApiGovernance />} />
+          </Route>
+          <Route path="/dashboard/system-analytics" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin']} />}>
+            <Route index element={<SystemAnalytics />} />
+          </Route>
+          <Route path="/dashboard/audit-logs" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin']} />}>
+            <Route index element={<AuditLogs />} />
+          </Route>
+
+          {/* Internal Professional/Staff Dashboard templates */}
           <Route path="/dashboard/admin" element={<RoleGuard allowedRoles={['Admin', 'SuperAdmin']} />}>
             <Route index element={<AdminDashboard />} />
           </Route>
-          
           <Route path="/dashboard/rm" element={<RoleGuard allowedRoles={['Admin', 'RM', 'SuperAdmin']} />}>
             <Route index element={<RMDashboard />} />
           </Route>
-          
           <Route path="/dashboard/advisory" element={<RoleGuard allowedRoles={['Admin', 'Advisory', 'SuperAdmin']} />}>
             <Route index element={<AdvisoryDashboard />} />
           </Route>
-          
           <Route path="/dashboard/operations" element={<RoleGuard allowedRoles={['Admin', 'Operations', 'SuperAdmin']} />}>
             <Route index element={<OperationsDashboard />} />
           </Route>
-          
           <Route path="/dashboard/compliance" element={<RoleGuard allowedRoles={['Admin', 'Compliance', 'SuperAdmin']} />}>
             <Route index element={<ComplianceDashboard />} />
           </Route>
-          
           <Route path="/dashboard/security" element={<RoleGuard allowedRoles={['Admin', 'Security', 'SuperAdmin']} />}>
             <Route index element={<SecurityDashboard />} />
+          </Route>
+          <Route path="/dashboard/service-health" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin']} />}>
+            <Route index element={<ServiceHealth />} />
+          </Route>
+          <Route path="/dashboard/alerts" element={<RoleGuard allowedRoles={['SuperAdmin', 'Admin']} />}>
+            <Route index element={<Alerts />} />
           </Route>
         </Route>
 

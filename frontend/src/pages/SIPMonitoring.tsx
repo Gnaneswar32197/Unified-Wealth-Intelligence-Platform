@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PageTemplate from './PageTemplate';
-import { AlertTriangle, PauseCircle, Layers, RefreshCw, XCircle } from 'lucide-react';
+import { AlertTriangle, PauseCircle, Layers, RefreshCw } from 'lucide-react';
 
 // Contract signature matching your operations database layout
 interface SIPRecord {
@@ -24,15 +24,21 @@ export default function SIPMonitoring() {
       try {
         setIsLoading(true);
         // Pure frontend fetch call to your existing operational API endpoint
-        const response = await fetch('http://localhost:5000/api/operations/sips', {
+        const response = await fetch('http://localhost:5000/api/operations/failed-sips', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('core_session_token')}`
+            'Authorization': `Bearer ${localStorage.getItem('wealth-token')}`
           }
         });
         
         if (!response.ok) throw new Error('API offline');
         const data = await response.json();
-        setSips(data);
+        if (data.success && Array.isArray(data.failed_sips)) {
+          setSips(data.failed_sips);
+        } else if (Array.isArray(data)) {
+          setSips(data);
+        } else {
+          throw new Error('Invalid format');
+        }
       } catch (err) {
         // FRONTEND FALLBACK SIMULATION: Prevents blank page crash if backend is disconnected
         setSips([

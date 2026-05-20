@@ -1,10 +1,13 @@
+import React from 'react';
+
 interface PageTemplateProps {
   title: string;
   subtitle: string;
   details: string[];
+  children?: React.ReactNode;
 }
 
-export default function PageTemplate({ title, subtitle, details }: PageTemplateProps) {
+export default function PageTemplate({ title, subtitle, details, children }: PageTemplateProps) {
   return (
     <div className="space-y-6">
       <div className="border-l-4 border-emerald-500 pl-4">
@@ -14,11 +17,17 @@ export default function PageTemplate({ title, subtitle, details }: PageTemplateP
 
       <div className="grid gap-4 sm:grid-cols-2">
         {details.map((item) => (
-          <div key={item} className="rounded-3xl border border-slate-800 bg-slate-900/95 p-6 shadow-sm shadow-slate-950/10">
+          <div key={item} className="rounded-3xl border border-gray-850 bg-gray-900/90 p-6 shadow-sm">
             <p className="text-sm text-slate-200">{item}</p>
           </div>
         ))}
       </div>
+
+      {children && (
+        <div className="mt-6">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
