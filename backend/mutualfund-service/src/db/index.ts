@@ -4,15 +4,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const pool = new Pool({
-
   host: process.env.DB_HOST,
-
   port: Number(process.env.DB_PORT),
-
   user: process.env.DB_USER,
-
   password: process.env.DB_PASSWORD,
-
   database: process.env.DB_NAME,
 
   ssl: {
@@ -20,10 +15,13 @@ export const pool = new Pool({
   },
 });
 
-pool.connect()
-  .then(() => {
+pool
+  .connect()
+  .then((client) => {
     console.log("MF DB Connected");
+    client.release();
   })
   .catch((err) => {
-    console.log(err);
+    console.error("DB Connection Error:");
+    console.error(err.message);
   });
