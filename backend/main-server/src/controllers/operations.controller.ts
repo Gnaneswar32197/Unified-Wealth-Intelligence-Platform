@@ -3,12 +3,6 @@ import axios from "axios";
 
 import { pool } from "../db";
 
-
-
-/* ======================================================
-   FAILED SIPS
-====================================================== */
-
 export const getFailedSIPs =
 async(
   req:Request,
@@ -42,10 +36,6 @@ async(
 };
 
 
-
-/* ======================================================
-   INACTIVE INVESTORS
-====================================================== */
 
 export const getInactiveInvestors =
 async(
@@ -92,9 +82,6 @@ async(
 
 
 
-/* ======================================================
-   SERVICE FAILURES
-====================================================== */
 
 export const getServiceFailures =
 async(
@@ -136,11 +123,6 @@ async(
 };
 
 
-
-/* ======================================================
-   RETRY FAILED JOB
-====================================================== */
-
 export const retryJob =
 async(
   req:Request,
@@ -172,10 +154,6 @@ async(
 };
 
 
-
-/* ======================================================
-   RECONCILIATION
-====================================================== */
 
 export const getReconciliation =
 async(

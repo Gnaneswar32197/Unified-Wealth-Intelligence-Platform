@@ -5,9 +5,6 @@ import { pool } from "../db";
 
 
 
-/* ======================================================
-   GET ALL INVESTORS
-====================================================== */
 
 export const getAllInvestors =
 async(
@@ -44,9 +41,7 @@ async(
 
 
 
-/* ======================================================
-   GET SINGLE INVESTOR
-====================================================== */
+
 
 export const getInvestorById =
 async(
@@ -94,9 +89,6 @@ async(
 
 
 
-/* ======================================================
-   UNIFIED PORTFOLIO
-====================================================== */
 
 export const getUnifiedPortfolio =
 async(
@@ -131,10 +123,6 @@ async(
 
 
 
-    /* ==========================================
-       EQUITY SERVER API CALL
-    ========================================== */
-
     const equityResponse =
     await axios.get(
       `http://localhost:5001/api/equity/holdings/${investor.equity_investor_id}`
@@ -142,9 +130,6 @@ async(
 
 
 
-    /* ==========================================
-       MF SERVER API CALL
-    ========================================== */
 
     const mfResponse =
     await axios.get(
@@ -180,11 +165,6 @@ async(
 };
 
 
-
-/* ======================================================
-   WEALTH SUMMARY
-====================================================== */
-
 export const getWealthSummary =
 async(
   req:Request,
@@ -218,10 +198,6 @@ async(
 
 
 
-    /* ==========================================
-       EQUITY DATA
-    ========================================== */
-
     const equityResponse =
     await axios.get(
       `http://localhost:5001/api/equity/holdings/${investor.equity_investor_id}`
@@ -229,9 +205,6 @@ async(
 
 
 
-    /* ==========================================
-       MF DATA
-    ========================================== */
 
     const mfResponse =
     await axios.get(
@@ -280,9 +253,6 @@ async(
 
 
 
-/* ======================================================
-   INVESTOR ACTIVITY
-====================================================== */
 
 export const getInvestorActivity =
 async(
@@ -317,9 +287,6 @@ async(
 
 
 
-    /* ==========================================
-       EQUITY TRANSACTIONS
-    ========================================== */
 
     const equityTransactions =
     await axios.get(
@@ -327,10 +294,6 @@ async(
     );
 
 
-
-    /* ==========================================
-       MF TRANSACTIONS
-    ========================================== */
 
     const mfTransactions =
     await axios.get(

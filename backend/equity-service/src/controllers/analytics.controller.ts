@@ -1,10 +1,6 @@
 import { Request, Response } from "express";
 
 import { pool } from "../db";
-
-
-
-
 export const getTopHoldings =
 async(
   req:Request,

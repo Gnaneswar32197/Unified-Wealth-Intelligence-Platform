@@ -5,9 +5,6 @@ import { pool } from "../db";
 
 
 
-/* ======================================================
-   ADVISOR ANALYTICS
-====================================================== */
 
 export const getAdvisorAnalytics =
 async(
@@ -99,9 +96,6 @@ async(
 
 
 
-/* ======================================================
-   DIVERSIFICATION ANALYSIS
-====================================================== */
 
 export const getDiversificationAnalysis =
 async(
@@ -198,9 +192,7 @@ async(
 
 
 
-/* ======================================================
-   RISK ANALYSIS
-====================================================== */
+
 
 export const getRiskAnalysis =
 async(
@@ -310,9 +302,6 @@ async(
 
 
 
-/* ======================================================
-   RECOMMENDATIONS
-====================================================== */
 
 export const getRecommendations =
 async(
