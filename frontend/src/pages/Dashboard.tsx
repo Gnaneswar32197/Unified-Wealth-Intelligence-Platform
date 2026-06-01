@@ -1,81 +1,3 @@
-<<<<<<< HEAD
-import {
-
-  useEffect,
-
-  useState
-
-} from "react";
-
-import DashboardCard
-from "../components/DashboardCard";
-
-import {
-
-  Wallet,
-
-  Users,
-
-  ShieldCheck,
-
-  Activity
-
-} from "lucide-react";
-
-import {
-
-  fetchAdminAnalytics,
-
-  fetchSystemHealth
-
-} from "../services/adminApi";
-
-
-
-export default function AdminDashboard(){
-
-  const [analytics,setAnalytics] =
-  useState<any>(null);
-
-  const [health,setHealth] =
-  useState<any>(null);
-
-
-
-  useEffect(() => {
-
-    loadData();
-
-  },[]);
-
-
-
-  async function loadData(){
-
-    try {
-
-      const analyticsData =
-      await fetchAdminAnalytics();
-
-      const healthData =
-      await fetchSystemHealth();
-
-      setAnalytics(
-        analyticsData
-      );
-
-      setHealth(
-        healthData
-      );
-
-    } catch(error){
-
-      console.log(error);
-    }
-  }
-
-
-=======
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context.tsx';
 import { Navigate } from 'react-router-dom';
@@ -131,7 +53,6 @@ export default function Dashboard() {
   useEffect(() => {
     fetchDashboardData();
   }, []);
->>>>>>> 0dd0924b (changed frontend)
 
   const handleResetData = () => {
     alert('Dashboard telemetry caches successfully recycled.');
@@ -146,70 +67,6 @@ export default function Dashboard() {
   const strokeDashoffset = circ - (percentage / 100) * circ;
 
   return (
-<<<<<<< HEAD
-
-    <div className="space-y-6">
-
-      <div>
-
-        <h1 className="text-3xl font-bold">
-
-          Super Admin Dashboard
-        </h1>
-
-        <p className="text-gray-400">
-
-          Enterprise Wealth Operations
-        </p>
-      </div>
-
-
-
-      <div className="grid grid-cols-4 gap-6">
-
-        <DashboardCard
-          title="Platform Users"
-          value={
-            analytics?.total_users || 0
-          }
-          icon={Users}
-          subtext="All active staff"
-        />
-
-
-
-        <DashboardCard
-          title="Unified Investors"
-          value={
-            analytics?.total_investors || 0
-          }
-          icon={Wallet}
-          subtext="Total onboarded investors"
-        />
-
-
-
-        <DashboardCard
-          title="System Security"
-          value="Protected"
-          icon={ShieldCheck}
-          subtext="JWT + RBAC active"
-        />
-
-
-
-        <DashboardCard
-          title="Microservices"
-          value={
-            health?.active_services || 0
-          }
-          icon={Activity}
-          subtext="Gateway + Equity + MF"
-        />
-
-      </div>
-
-=======
     <div className="space-y-6 text-gray-200">
       {/* Top Header Strip matching the screenshot */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-900 pb-5">
@@ -423,7 +280,7 @@ export default function Dashboard() {
           </div>
 
           <div className="flex justify-between items-center border-t border-gray-850 pt-3">
-            <span className="text-lg font-bold font-mono text-gray-100">$1232.00</span>
+            <span className="text-lg font-bold font-mono text-gray-100">$1,232.00</span>
             <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-[9px] text-emerald-400 font-bold rounded font-mono">
               ↑ 3.5%
             </span>
@@ -526,7 +383,6 @@ export default function Dashboard() {
           </table>
         </div>
       </div>
->>>>>>> 0dd0924b (changed frontend)
     </div>
   );
 }

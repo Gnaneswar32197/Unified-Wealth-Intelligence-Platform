@@ -837,6 +837,9 @@ import {
   Database,
   LogOut,
 } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context.tsx';
+
 
 const makeLinkClass = (currentPath: string, path: string) =>
   `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
@@ -984,6 +987,6 @@ export default function Sidebar() {
         </button>
       </div>
 
-    </div>
+    </aside>
   );
 }
